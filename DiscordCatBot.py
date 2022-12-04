@@ -21,7 +21,6 @@ subs = [
     "Catswithjobs",
     "Catloaf",
     "WhatsWrongWithYourCat",
-    "WhatsWrongWithYourCat",
     "teefies",
     "CatsOnKeyboards",
     "blurrypicturesofcats",
