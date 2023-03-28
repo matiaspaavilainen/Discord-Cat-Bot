@@ -1,5 +1,5 @@
 import discord
-import praw
+import asyncpraw
 import random
 
 intents = discord.Intents.default()
@@ -7,11 +7,10 @@ intents.message_content = True
 
 client = discord.Client(intents=intents)
 
-reddit = praw.Reddit(
+reddit = asyncpraw.Reddit(
     client_id="CLIENT_ID",
     client_secret="CLIENT_SECRET",
     user_agent="USER_AGENT",
-    check_for_async=False
 )
 
 # Name of the subreddit as string
@@ -28,10 +27,10 @@ subs = [
 
 submissions = []
 
-
-def getSubmissions(n):
+async def getSubmissions(n):
     for sub in subs:
-        for submission in reddit.subreddit(sub).hot(limit=n):
+        subreddit = await reddit.subreddit(sub)
+        async for submission in subreddit.hot(limit=n):
             # Filter crossposts and videos out
             if submission.is_reddit_media_domain and submission.url.startswith("https://i"):
                 submissions.append(submission.url)
@@ -40,9 +39,9 @@ def getSubmissions(n):
         print(len(submissions))
 
 
-def randomPost():
+async def randomPost():
     if len(submissions) == 0:
-        getSubmissions(10)
+        await getSubmissions(10)
     post = random.choice(submissions)
     submissions.remove(post)
     return post
@@ -51,7 +50,7 @@ def randomPost():
 @client.event
 async def on_ready():
     print("Getting submissions...")
-    getSubmissions(10)
+    await getSubmissions(10)
     print("Logged in as {0.user}".format(client))
 
 
@@ -61,6 +60,6 @@ async def on_message(message):
         return
 
     if message.content.startswith('/cat'):
-        await message.channel.send(randomPost())
+        await message.channel.send(await randomPost())
 
 client.run("DISCORD_TOKEN")
